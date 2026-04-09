@@ -13,6 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { authClient } from "@/lib/auth-client";
+import z from "zod";
+import { error } from "console";
 
 export default function SignUpPage() {
     const form = useForm({
@@ -24,8 +27,17 @@ export default function SignUpPage() {
         },
       });
 
-function onSubmit() {
-    console.log('Hello coldy')  
+async function onSubmit(data: z.infer<typeof signUpSchema>) {
+    const { data: result, error } = await authClient.signUp.email({
+      email: data.email,
+      password: data.password,
+      name: data.name
+    });
+   console.log("Result:", result);
+   if(!error) {
+    window.alert("Sign up successful! Please check your email to verify your account.");
+   }
+  console.log("Error:", error);
 }
 
   return (
@@ -36,7 +48,7 @@ function onSubmit() {
           <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+         <form onSubmit={form.handleSubmit(onSubmit, (errors) => console.log("Validation errors:", errors))}>
             <FieldGroup>
                 <Controller
                   name="name"
