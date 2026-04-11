@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, buttonVariants } from "../ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { useConvexAuth } from "convex/react";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 export function Navbar() {
 
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const router = useRouter();
 
 
   return (
@@ -30,7 +33,17 @@ export function Navbar() {
       <div className="flex items-center gap-2">
  
        {isLoading ? null : isAuthenticated ? (
-         <Button onClick={() => authClient.signOut({})}>
+         <Button onClick={() => authClient.signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              toast.success("Logged out successfully!");
+              router.push("/");
+            },
+            onError: () => {
+              toast.error("Something went wrong!");
+            }
+          }
+         })}>
           Logout
          </Button>
        ): (
