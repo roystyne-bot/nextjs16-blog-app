@@ -11,7 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as betterAuth_adapter from "../betterAuth/adapter.js";
 import type * as http from "../http.js";
-import type * as tasks from "../tasks.js";
+import type * as posts from "../posts.js";
 
 import type {
   ApiFromModules,
@@ -23,7 +23,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "betterAuth/adapter": typeof betterAuth_adapter;
   http: typeof http;
-  tasks: typeof tasks;
+  posts: typeof posts;
 }>;
 
 /**
