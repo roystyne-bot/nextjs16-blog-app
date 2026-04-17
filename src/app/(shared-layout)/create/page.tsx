@@ -1,8 +1,8 @@
 "use client";
 
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { createBlogAction } from "@/app/actions";
 import { postSchema } from "@/app/schemas/blog";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Controller, useForm } from "react-hook-form";
 import {
   Field,
   FieldError,
@@ -19,48 +18,46 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { Loader2 } from "lucide-react";
-import { createBlogAction } from "@/app/actions";
+
+import { useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
+import z from "zod";
 
 export default function CreateRoute() {
-  /*const router = useRouter();*
   const [isPending, startTransition] = useTransition();
 
-  const mutation = useMutation(api.posts.createPost);
   const form = useForm({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      title: "",
       content: "",
+      title: "",
+      image: undefined,
     },
   });
 
   function onSubmit(values: z.infer<typeof postSchema>) {
-    startTransition(async () => {
-      console.log('Hey this runs on the server side');
+  startTransition(async () => {
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("content", values.content);
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
+    }
 
-      await createBlogAction(values);
-
-      form.reset();
-    });
-  }
-
+    await createBlogAction(formData); // ✅ FormData not values
+  });
+}
   return (
     <div className="py-12">
       <div className="text-center mb-12">
-        <h1
-          className="text-4xl font-bold mb-4 tracking-tight
-             sm:text-5xl"
-        >
-          Create a new post
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Create Post
         </h1>
         <p className="text-xl text-muted-foreground pt-4">
-          Share your thoughts with the big world§
+          Share your thoughts with the big world
         </p>
       </div>
 
@@ -70,10 +67,8 @@ export default function CreateRoute() {
           <CardDescription>Create a new blog article</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Add your form fields here */}
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FieldGroup>
-              {/* Title Field */}
+            <FieldGroup className="gap-y-4">
               <Controller
                 name="title"
                 control={form.control}
@@ -82,7 +77,7 @@ export default function CreateRoute() {
                     <FieldLabel>Title</FieldLabel>
                     <Input
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter post title"
+                      placeholder="super cool title"
                       {...field}
                     />
                     {fieldState.invalid && (
@@ -91,7 +86,7 @@ export default function CreateRoute() {
                   </Field>
                 )}
               />
-              {/*Content Field*/}
+
               <Controller
                 name="content"
                 control={form.control}
@@ -100,23 +95,47 @@ export default function CreateRoute() {
                     <FieldLabel>Content</FieldLabel>
                     <Textarea
                       aria-invalid={fieldState.invalid}
-                      placeholder="Enter cool post content"
+                      placeholder="Super cool blog content"
                       {...field}
-                    ></Textarea>
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
+
+              <Controller
+                name="image"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Image</FieldLabel>
+                    <Input
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Super cool blog content"
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        field.onChange(file);
+                      }}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
               <Button disabled={isPending}>
                 {isPending ? (
                   <>
-                    <Loader2 className="animate-spin size-4" />
-                    <span>Creating...</span>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Loading...</span>
                   </>
                 ) : (
-                  "Create Post"
+                  <span>Create Post</span>
                 )}
               </Button>
             </FieldGroup>

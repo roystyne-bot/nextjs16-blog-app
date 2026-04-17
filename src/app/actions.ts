@@ -1,30 +1,48 @@
 "use server";
 
-import { z } from "zod";
-import { postSchema } from "./schemas/blog";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { fetchMutation } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { redirect } from "next/navigation";
 import { getToken } from "@/lib/auth-server";
 
-export async function createBlogAction(values: z.infer<typeof postSchema>) {
-    const parsed = postSchema.safeParse(values);
+export async function createBlogAction(formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const image = formData.get("image") as File;
 
-    if (!parsed.success) {
-        throw new Error("Invalid input");
-    }
+    if (!title || !content) return { error: "Invalid input" };
+    if (!image || image.size === 0) return { error: "Image is required" };
 
     const token = await getToken();
+    if (!token) return { error: "Not authenticated" };
 
-    if (!token) {
-        throw new Error("Not authenticated");
-    }
+    const imageUrl = await fetchMutation(
+      api.posts.generateImageUploadUrl,
+      {},
+      { token }
+    );
 
+    const uploadResult = await fetch(imageUrl, {
+      method: "POST",
+      headers: { "Content-Type": image.type },
+      body: image,
+    });
 
-    await fetchMutation(api.posts.createPost, {
-        title: parsed.data.title,
-        body: parsed.data.content
-    }, { token });
+    if (!uploadResult.ok) return { error: "Failed to upload image" };
 
-    return redirect("/"); // Redirect to the homepage after creating the blog post
+    const { storageId } = await uploadResult.json();
+
+    await fetchMutation(
+      api.posts.createPost,
+      { title, body: content, imageStorageId: storageId },
+      { token }
+    );
+
+  } catch (e) {
+    console.error(e); // ✅ shows actual error in terminal
+    return { error: "Failed to create post" };
+  }
+
+  return redirect("/blog");
 }

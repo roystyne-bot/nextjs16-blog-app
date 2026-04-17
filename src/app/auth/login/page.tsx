@@ -39,9 +39,15 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  function onSubmit(data: z.infer<typeof loginSchema>) {
+  /*J'ai Change type en interface*/
+  interface SignInResult {
+    data: { user: { id: string; email: string; name: string } } | null;
+    error: { message?: string; status?: number } | null;
+  };
+
+  function onSubmit(data: z.infer<typeof loginSchema>): void {
     startTransition(async () => {
-      const { data: result, error } = await authClient.signIn.email({
+      const { data: result, error }: SignInResult = await authClient.signIn.email({
         email: data.email,
         password: data.password,
       });
