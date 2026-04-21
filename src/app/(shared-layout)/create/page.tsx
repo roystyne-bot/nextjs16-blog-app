@@ -47,7 +47,7 @@ export default function CreateRoute() {
       formData.append("image", values.image);
     }
 
-    await createBlogAction(formData); // ✅ FormData not values
+    await createBlogAction(formData); 
   });
 }
   return (

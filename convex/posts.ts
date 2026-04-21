@@ -28,7 +28,6 @@ export const createPost = mutation({
      * Narrows the authenticated user shape so the user id can be stored as the author id.
      */
     const authUser = user as { _id: string };
-    
 
     /**
      * Inserts the post document and returns its generated id.
@@ -66,7 +65,7 @@ export const getPosts = query({
           ...post,
           imageUrl: resolvedImageUrl,
         };
-      })
+      }),
     );
   },
 });

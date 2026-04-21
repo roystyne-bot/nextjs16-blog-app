@@ -10,6 +10,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { fetchQuery } from "convex/nextjs";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import toast from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+
+export const dynamic = "force-static";
+export const revalidate = 30;
 
 export function BlogPage() {
   /*const data = useQuery(api.posts.getPosts);*/
@@ -37,15 +42,22 @@ export function BlogPage() {
 export default BlogPage;
 
 async function LoadBlogPosts() {
-  await new Promise((resolve) => setTimeout(resolve, 4000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   const data = await fetchQuery(api.posts.getPosts, {});
 
-  console.log(data[0]?.imageUrl);
+  if (!data) {
+    toast.error(
+      "Failed to load posts, please try again later or check your connection.",
+    );
+    return null;
+  }
 
+  console.log(data[0]?.imageUrl);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <Toaster />
       {data.length === 0 ? (
         <Card className="col-span-full text-center">
           <CardHeader>
@@ -53,11 +65,14 @@ async function LoadBlogPosts() {
           </CardHeader>
         </Card>
       ) : (
-        data.map((post) => ( 
+        data.map((post) => (
           <Card key={post._id} className="pt-0">
             <div className="relative w-full h-48 overflow-hidden">
               <Image
-                src={post.imageUrl ?? "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"}
+                src={
+                  post.imageUrl ??
+                  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+                }
                 alt={post.title}
                 width={500}
                 height={300}
@@ -72,7 +87,9 @@ async function LoadBlogPosts() {
                   {post.title}
                 </h1>
               </Link>
-              <p className="text-muted-foreground line-clamp-3">{post.content}</p>
+              <p className="text-muted-foreground line-clamp-3">
+                {post.content}
+              </p>
             </CardContent>
             <CardFooter className="border-none bg-transparent">
               <Link
@@ -86,9 +103,9 @@ async function LoadBlogPosts() {
               </Link>
             </CardFooter>
           </Card>
-        )) 
+        ))
       )}
-    </div> 
+    </div>
   );
 }
 

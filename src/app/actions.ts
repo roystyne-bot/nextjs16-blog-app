@@ -4,6 +4,7 @@ import { fetchMutation } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { redirect } from "next/navigation";
 import { getToken } from "@/lib/auth-server";
+import { revalidatePath } from "next/cache";
 
 export async function createBlogAction(formData: FormData) {
   try {
@@ -20,7 +21,7 @@ export async function createBlogAction(formData: FormData) {
     const imageUrl = await fetchMutation(
       api.posts.generateImageUploadUrl,
       {},
-      { token }
+      { token },
     );
 
     const uploadResult = await fetch(imageUrl, {
@@ -36,13 +37,13 @@ export async function createBlogAction(formData: FormData) {
     await fetchMutation(
       api.posts.createPost,
       { title, body: content, imageStorageId: storageId },
-      { token }
+      { token },
     );
-
   } catch (e) {
-    console.error(e); // ✅ shows actual error in terminal
+    console.error(e);
     return { error: "Failed to create post" };
   }
 
+  revalidatePath('/blog');
   return redirect("/blog");
 }
