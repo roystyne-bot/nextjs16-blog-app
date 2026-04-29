@@ -12,9 +12,18 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
-
+import type { Metadata } from 'next';
 export const dynamic = "force-static";
 export const revalidate = 30;
+
+ 
+export const metadata: Metadata = {
+  title: "Blog - My Awesome Blog",
+  description: "Read the latest insights, thoughts, and trends from our team on our blog.",
+  category: "Blog",
+  authors: [{ name: "Coldy Daroy"}],
+}
+
 
 export function BlogPage() {
   /*const data = useQuery(api.posts.getPosts);*/

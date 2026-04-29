@@ -23,7 +23,6 @@ export const createPost = mutation({
     if (!user) {
       throw new ConvexError("Not authenticated");
     }
-
     /**
      * Narrows the authenticated user shape so the user id can be stored as the author id.
      */
