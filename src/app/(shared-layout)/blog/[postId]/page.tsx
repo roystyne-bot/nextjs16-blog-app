@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { CommentSection } from "@/components/web/CommentSection";
 import { Metadata } from "next";
 import { PostPresence } from "@/components/web/PostPresence";
+import { getToken } from "@/lib/auth-server";
+import { redirect } from "next/navigation";
 
 interface PostIdRouteProps {
   params: {
@@ -16,7 +18,9 @@ interface PostIdRouteProps {
   };
 }
 
-export async function generateMetadata({ params }: PostIdRouteProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PostIdRouteProps): Promise<Metadata> {
   const { postId } = await params;
   const post = await fetchQuery(api.posts.getPostById, { postId: postId });
 
@@ -35,15 +39,19 @@ export async function generateMetadata({ params }: PostIdRouteProps): Promise<Me
 export default async function PostIdRoute({ params }: PostIdRouteProps) {
   const { postId } = await params;
 
+  const token = await getToken();
+
   const [post, preloadedComments, userId] = await Promise.all([
-   await fetchQuery(api.posts.getPostById, { postId: postId }),
-   await preloadQuery(
-    api.comments.getCommentsByPostId, { 
-      postId: postId
-     }),
-     await fetchQuery(api.presence.getUserId, {}),
-    ]);
-   
+    await fetchQuery(api.posts.getPostById, { postId: postId }),
+    await preloadQuery(api.comments.getCommentsByPostId, {
+      postId: postId,
+    }),
+    await fetchQuery(api.presence.getUserId, {}, { token }),
+  ]);
+
+  if(!userId){
+    return redirect("/auth/login");
+  }
   /*const comments = await fetchQuery(api.comments.getCommentsByPostId, { postId: postId });*/
 
   if (!post) {
@@ -86,13 +94,13 @@ export default async function PostIdRoute({ params }: PostIdRouteProps) {
         <h1 className="text-4xl font-bold tracking-tight text-foreground">
           {post.title}
         </h1>
-        
-        <div>
-          <p className="text-sm text-muted-foreground">
-          Posted on: {new Date(post._creationTime).toLocaleDateString()}
-        </p>
 
-        <PostPresence roomId={post._id} userId={userId} />
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            Posted on: {new Date(post._creationTime).toLocaleDateString()}
+          </p>
+
+          {userId && <PostPresence roomId={post._id} userId={userId} />}
         </div>
       </div>
 
