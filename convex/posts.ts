@@ -148,7 +148,7 @@ export const searchPosts = query({
         // if (seen.size >= limit) {
         //   break;
         // }
-        if (seen.has(doc._id)) {
+        if (!seen.has(doc._id)) {
           seen.add(doc._id);
           results.push({
             _id: doc._id,
@@ -175,7 +175,7 @@ export const searchPosts = query({
           .withSearchIndex("search_content", (q) =>
             q.search("content", args.term),
           )
-          .take(limit - results.length);
+          .take(limit);
 
         await pushDocs(contentMatches);
       }
