@@ -13,8 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import toast from "react-hot-toast";
 import { Toaster } from "react-hot-toast";
 import type { Metadata } from 'next';
-export const dynamic = "force-static";
-export const revalidate = 30;
+import { connection } from "next/server";
+import { cacheLife, cacheTag } from "next/cache";
+
+
+/*export const dynamic = "force-static";
+export const revalidate = 30;*/
 
  
 export const metadata: Metadata = {
@@ -51,7 +55,11 @@ export function BlogPage() {
 export default BlogPage;
 
 async function LoadBlogPosts() {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  "use cache";
+  cacheLife("hours");  
+  cacheTag("blog");
+  /*await connection();*/
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const data = await fetchQuery(api.posts.getPosts, {});
 

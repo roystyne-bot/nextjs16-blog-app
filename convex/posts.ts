@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { authComponent } from "./auth";
+import { Doc, Id } from "./_generated/dataModel";
 
 /**
  * Creates a new blog post for the currently authenticated user.
@@ -114,5 +115,71 @@ export const getPostById = query({
       ...post,
       imageUrl: resolvedImageUrl,
     };
+  },
+});
+
+interface searchResultTypes {
+  _id: Id<"posts">; 
+  title: string;
+  content: string;
+}
+
+
+export const searchPosts = query({
+  args: {
+    term: v.string(),
+    limit: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit;
+    // const posts = await ctx.db
+    /*.query("posts")
+      .search("search_title", args.term)
+      .search("search_content", args.term)
+      .order("desc")
+      .collect();
+      return posts;*/
+    const results: Array<searchResultTypes> = [];
+
+    const seen = new Set();
+
+    const pushDocs = async (docs: Array<Doc<"posts">>) => {
+      for (const doc of docs) {
+        // if (seen.size >= limit) {
+        //   break;
+        // }
+        if (seen.has(doc._id)) {
+          seen.add(doc._id);
+          results.push({
+            _id: doc._id,
+            title: doc.title,
+            content: doc.content,
+          });
+          if (results.length >= limit) {
+            break;
+          }
+        }
+      }
+    };
+
+    const titleMatches = await ctx.db
+      .query("posts")
+      .withSearchIndex("search_title", (q) => q.search("title", args.term))
+      .take(limit);
+
+      await pushDocs(titleMatches);
+
+      if (results.length < limit) {
+        const contentMatches = await ctx.db
+          .query("posts")
+          .withSearchIndex("search_content", (q) =>
+            q.search("content", args.term),
+          )
+          .take(limit - results.length);
+
+        await pushDocs(contentMatches);
+      }
+
+      return results;
   },
 });

@@ -44,7 +44,7 @@ export const list = query({
         
         return {
           ...entry,
-          name: authUser.name
+          name: authUser.name,
         }
       })
     )

@@ -78,6 +78,7 @@ export default function CreateRoute() {
                     <Input
                       aria-invalid={fieldState.invalid}
                       placeholder="super cool title"
+                      className="focus:ring-4 focus:ring-blue-500"
                       {...field}
                     />
                     {fieldState.invalid && (
