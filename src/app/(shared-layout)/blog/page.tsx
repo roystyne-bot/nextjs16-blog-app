@@ -55,10 +55,10 @@ export function BlogPage() {
 export default BlogPage;
 
 async function LoadBlogPosts() {
-  "use cache";
+  /*"use cache";
   cacheLife("hours");  
-  cacheTag("blog");
-  /*await connection();*/
+  cacheTag("blog");*/
+  await connection();
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const data = await fetchQuery(api.posts.getPosts, {});
